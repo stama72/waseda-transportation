@@ -19,6 +19,10 @@ function App() {
         </p>
       </header>
 
+
+
+
+
       <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {/* Weather Widget Placeholder */}
         <section className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
