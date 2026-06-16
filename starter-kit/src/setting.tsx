@@ -1,15 +1,53 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { stations } from './stations';
+
+interface Station {
+  id: string;
+  name: string;
+  code: string;
+}
 
 // 設定画面。最寄り駅・方面・始業時間などを設定するモック。
 // ※ 入力値はローカルstateで保持するだけ。保存処理やバリデーションは未実装。
 
-export default function Setting() {
-  const [nearestStation, setNearestStation] = useState('t03');
-  const [direction, setDirection] = useState('nishifunabashi');
-  const [startTime, setStartTime] = useState('09:00');
-  const [walkMinutes, setWalkMinutes] = useState('10');
-  const [notify, setNotify] = useState(true);
+export default function Setting(): JSX.Element {
+  const [nearestStation, setNearestStation] = useState<string>(
+    () => {
+      const savedStation = localStorage.getItem('nearestStation');
+      return savedStation ? savedStation : 't03';
+    }
+  );
+  const [direction, setDirection] = useState(
+    () => {
+      const savedDirection = localStorage.getItem('direction');
+      return savedDirection ? savedDirection : 'nishifunabashi';
+    }
+  );
+  const [startTime, setStartTime] = useState(
+    () => {
+      const savedStartTime = localStorage.getItem('startTime');
+      return savedStartTime ? savedStartTime : '09:00';
+    }
+  );
+  const [walkMinutes, setWalkMinutes] = useState(
+    () => {
+      const savedWalkMinutes = localStorage.getItem('walkMinutes');
+      return savedWalkMinutes ? savedWalkMinutes : '10';
+    }
+  );
+  const [notify, setNotify] = useState(
+    () => {
+      const savedNotify = localStorage.getItem('notify');
+      return savedNotify ? JSON.parse(savedNotify) : true;
+    }
+  );
+  async function saveSettings(): Promise<void> {
+    localStorage.setItem('nearestStation', nearestStation);
+    localStorage.setItem('direction', direction);
+    localStorage.setItem('startTime', startTime);
+    localStorage.setItem('walkMinutes', walkMinutes);
+    localStorage.setItem('notify', notify.toString());
+  }
 
   return (
     <div className="space-y-4">
@@ -24,10 +62,10 @@ export default function Setting() {
           <span className="text-sm font-medium text-slate-700">最寄り駅</span>
           <select
             value={nearestStation}
-            onChange={(e) => setNearestStation(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNearestStation(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           >
-            {stations.map((s) => (
+            {stations.map((s: Station) => (
               <option key={s.id} value={s.id}>
                 {s.name}（{s.code}）
               </option>
@@ -40,7 +78,7 @@ export default function Setting() {
           <span className="text-sm font-medium text-slate-700">方面</span>
           <select
             value={direction}
-            onChange={(e) => setDirection(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDirection(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           >
             <option value="nishifunabashi">西船橋方面</option>
@@ -54,7 +92,7 @@ export default function Setting() {
           <input
             type="time"
             value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStartTime(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           />
         </label>
@@ -67,7 +105,7 @@ export default function Setting() {
               type="number"
               min={0}
               value={walkMinutes}
-              onChange={(e) => setWalkMinutes(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setWalkMinutes(e.target.value)}
               className="w-16 rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-right text-sm text-slate-900"
             />
             <span className="text-sm text-slate-500">分</span>
@@ -79,7 +117,7 @@ export default function Setting() {
           <span className="text-sm font-medium text-slate-700">出発リマインド通知</span>
           <button
             type="button"
-            onClick={() => setNotify((v) => !v)}
+            onClick={() => setNotify((v: boolean) => !v)}
             className={[
               'relative h-6 w-11 rounded-full transition-colors',
               notify ? 'bg-sky-500' : 'bg-slate-300',
@@ -89,7 +127,7 @@ export default function Setting() {
             <span
               className={[
                 'absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform',
-                notify ? 'translate-x-[22px]' : 'translate-x-0.5',
+                notify ? 'translate-x-[0px]' : 'translate-x-[-22px]',
               ].join(' ')}
             />
           </button>
@@ -97,7 +135,7 @@ export default function Setting() {
       </div>
 
       <button
-        type="button"
+        type="button" onClick={saveSettings} 
         className="w-full rounded-xl bg-sky-500 py-3 text-sm font-bold text-white shadow-sm active:bg-sky-600"
       >
         保存する
