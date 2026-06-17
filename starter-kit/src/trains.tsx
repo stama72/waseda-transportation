@@ -22,13 +22,14 @@ export const trains: Train[] = [
 
 type TrainMarkerProps = {
   train: Train;
+  onClick?: () => void; // 列車の箱がクリックされたときの処理
 };
 
 /** 線路上に重ねて表示する列車マーカー（小さな箱） */
-export function TrainMarker({ train }: TrainMarkerProps) {
+export function TrainMarker({ train, onClick }: TrainMarkerProps) {
   const arrow = train.direction === 'nishifunabashi' ? '▶' : '◀';
   return (
-    <div className="flex flex-col items-center gap-1 select-none">
+    <div className="flex flex-col items-center gap-1 select-none cursor-pointer active:scale-95 transition-transform" onClick={onClick}>
       <div className="flex items-center gap-1 rounded-md border-2 border-sky-500 bg-white px-2 py-1 shadow-sm">
         <span className="text-[10px] font-bold leading-none text-sky-700">{train.kind}</span>
         <span className="text-[10px] leading-none text-sky-500">{arrow}</span>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Home, ClipboardList, Settings } from 'lucide-react';
 import TimeLimit from './timeLimit';
 import StationsLine from './stations';
@@ -13,8 +13,19 @@ const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: 'setting', label: '設定', icon: Settings },
 ];
 
+//記録用の型を定義しました
+type RecordEntry = {
+  id: string;
+  date: string;
+  station: string;
+  kind: string;
+  destination: string;
+  boardedAt: string;
+  onTime: boolean;
+};
+
 /** ホーム画面：Time Limit と路線図 */
-function HomeScreen() {
+function HomeScreen({ onAddRecord }) {
   return (
     <div className="space-y-4">
       {/* 路線シンボル（東西線） */}
@@ -26,7 +37,7 @@ function HomeScreen() {
       </div>
 
       <TimeLimit />
-      <StationsLine />
+      <StationsLine onAddRecord={onAddRecord}/>
     </div>
   );
 }
@@ -34,12 +45,30 @@ function HomeScreen() {
 function App() {
   const [activeTab, setActiveTab] = useState<Tab>('home');
 
+  const [records, setRecords] = useState<RecordEntry[]>(() => {
+    const saved = localStorage.getItem('train_records');
+    // もしデータがあればJSのオブジェクトに戻す。なければ空の配列。
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  // records の中身が変化するたびに、ブラウザに保存する
+  useEffect(() => {
+    localStorage.setItem('train_records', JSON.stringify(records));
+  }, [records]); // records が変わったときだけ実行
+
+  // 新しい記録を追加するための関数←recordPopup.tsxで使う
+  const addRecord = (entry: RecordEntry) => {
+    setRecords([entry, ...records]); // 最新を一番上にして保存
+  };
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-slate-50">
       {/* メインコンテンツ */}
       <main className="flex-1 px-4 pb-24 pt-6">
-        {activeTab === 'home' && <HomeScreen />}
-        {activeTab === 'record' && <Record />}
+        {/* HomeScreen に onAddRecord をよこしている */}
+        {activeTab === 'home' && <HomeScreen onAddRecord={addRecord} />}
+        {/* record.tsx に records をよこしている */}
+        {activeTab === 'record' && <Record records={records} />}
         {activeTab === 'setting' && <Setting />}
 
         <footer className="mt-12 text-center text-xs text-slate-400">

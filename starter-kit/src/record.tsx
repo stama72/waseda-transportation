@@ -14,21 +14,20 @@ type RecordEntry = {
   onTime: boolean;
 };
 
-const records: RecordEntry[] = [
-  { id: '1', date: '6/13 (金)', station: '高田馬場', kind: '快速', destination: '西船橋行', boardedAt: '07:42', onTime: true },
-  { id: '2', date: '6/12 (木)', station: '高田馬場', kind: '各停', destination: '西船橋行', boardedAt: '07:55', onTime: true },
-  { id: '3', date: '6/11 (水)', station: '高田馬場', kind: '各停', destination: '東葉勝田台行', boardedAt: '08:10', onTime: false },
-  { id: '4', date: '6/10 (火)', station: '高田馬場', kind: '快速', destination: '西船橋行', boardedAt: '07:38', onTime: true },
-  { id: '5', date: '6/9 (月)', station: '高田馬場', kind: '各停', destination: '西船橋行', boardedAt: '07:50', onTime: true },
-];
-
-export default function Record() {
+export default function Record({ records }: { records: RecordEntry[] }) {
   return (
     <div className="space-y-4">
       <header>
         <h1 className="text-xl font-bold text-slate-900">記録</h1>
         <p className="text-sm text-slate-500">乗車履歴をさかのぼって確認できます</p>
       </header>
+
+      {/* 記録がまだないとき用 */}
+      {records.length === 0 && (
+        <div className="text-center py-10 text-slate-400 text-sm">
+          まだ記録がありません。
+        </div>
+      )}
 
       <ul className="space-y-3">
         {records.map((r) => (

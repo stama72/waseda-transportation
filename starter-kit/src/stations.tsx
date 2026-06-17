@@ -1,4 +1,6 @@
 import { trains as mockTrains, Train, TrainMarker } from './trains';
+import { useState } from 'react';
+import RecordPopup from './recordPopup';
 
 // 東西線（Tozai Line）の駅データ。今回はホーム周辺の3駅のみを表示するモック。
 export type Station = {
@@ -25,13 +27,16 @@ type StationsLineProps = {
   trains?: Train[];
   /** 最寄り駅（強調表示する駅のid） */
   nearestStationId?: string;
+  onAddRecord: (entry: any) => void; // 記録を追加するための関数を受け取る
 };
 
 /** ホーム画面の路線図。線路・駅・列車マーカーを重ねて描画する。 */
 export default function StationsLine({
+  onAddRecord,
   trains = mockTrains,
   nearestStationId = 't04',
 }: StationsLineProps) {
+  const [selectedTrain, setSelectedTrain] = useState<Train | null>(null);// 選択された列車のポップアップを表示する
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
       {/* 方面ラベル */}
@@ -48,8 +53,9 @@ export default function StationsLine({
         {trains.map((train) => (
           <div
             key={train.id}
-            className="absolute top-1/2 -translate-x-1/2 -translate-y-[180%]"
+            className="absolute top-1/2 -translate-x-1/2 -translate-y-[180%] cursor-pointer active:scale-90 transition-transform"
             style={{ left: `${toLeftPercent(train.position)}%` }}
+            onClick={() => setSelectedTrain(train)}
           >
             <TrainMarker train={train} />
           </div>
@@ -89,6 +95,14 @@ export default function StationsLine({
           );
         })}
       </div>
+      {/* 選択した電車のデータと、ポップアップを閉じる関数、記録を追加する関数を RecordPopup によこしてる */}
+      {selectedTrain && (
+        <RecordPopup 
+          train={selectedTrain} 
+          onClose={() => setSelectedTrain(null)} 
+          onAddRecord={onAddRecord}
+        />
+      )}
     </div>
   );
 }
