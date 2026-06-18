@@ -14,7 +14,12 @@ type RecordEntry = {
   onTime: boolean;
 };
 
-export default function Record({ records }: { records: RecordEntry[] }) {
+type RecordProps = {
+  records: RecordEntry[];
+  clearRecord: () => void;
+};
+
+export default function Record({ records, clearRecord }: RecordProps) {
   return (
     <div className="space-y-4">
       <header>
@@ -59,6 +64,9 @@ export default function Record({ records }: { records: RecordEntry[] }) {
           </li>
         ))}
       </ul>
+      <div  onClick={clearRecord} className="w-full rounded-xl bg-sky-500 py-3 my-4 text-sm text-center font-bold text-white shadow-sm active:bg-sky-600 active:scale-90 transition-transform">
+        <button>記録を削除</button>
+      </div>
     </div>
   );
 }

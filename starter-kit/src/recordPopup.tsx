@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { X } from 'lucide-react';
 
 export default function RecordPopup({ train, onClose, onAddRecord }) {
     const now = new Date();
@@ -7,16 +8,27 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
     if(isSuccess) {
         return (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-                <div className="bg-white p-6 rounded-2xl w-80">
+                <div className="relative bg-white p-6 rounded-2xl w-80">
+                    <button 
+                      onClick={onClose}
+                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <X size={20} />
+                    </button>
                     <h2 className="text-lg font-bold text-slate-900">記録が完了しました</h2>
-                    <button onClick={onClose}>閉じる</button>
                 </div>
             </div>
         );
     }
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
-      <div className="bg-white p-6 rounded-2xl w-80">
+      <div className="relative bg-white p-6 rounded-2xl w-80">
+        <button 
+          onClick={onClose}
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <X size={20} />
+        </button>
         <h2 className="text-lg font-bold text-slate-900">電車の詳細</h2>
         <ul className="mt-4 space-y-2 text-sm text-slate-700">
           <li>種別: {train.kind}</li>
@@ -37,9 +49,9 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);
-        }}>記録する</button>
-        <br/>
-        <button onClick={onClose}>閉じる</button>
+        }}
+        className="w-full rounded-xl bg-sky-500 py-3 my-4 text-sm font-bold text-white shadow-sm active:bg-sky-600 active:scale-90 transition-transform"
+        >記録する</button>
       </div>
     </div>
   );
