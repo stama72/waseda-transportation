@@ -25,7 +25,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
           <li>ステータス: 遅延</li>
         </ul>
         <h2 className="text-lg font-bold text-slate-900 space-y-2 mt-4">この電車で記録しますか？</h2>
-        <button onClick={() => {
+        <button type="button" onClick={() => {
             const newEntry = {
                 id: Date.now().toString(),
                 date: "6/17 (水)", // 本来は new Date() から作る
@@ -39,7 +39,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
             setIsSuccess(true);
         }}>記録する</button>
         <br/>
-        <button onClick={onClose}>閉じる</button>
+        <button type="button" onClick={onClose}>閉じる</button>
       </div>
     </div>
   );
