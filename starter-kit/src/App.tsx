@@ -63,7 +63,7 @@ function App() {
 
   //記録を削除するための関数←record.tsxで使う
   const clearRecord = () =>{
-    localStorage.clear();
+    localStorage.removeItem('train_records');
     setRecords([]);
   };
 

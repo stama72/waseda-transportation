@@ -7,14 +7,8 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
 
     if(isSuccess) {
         return (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+              <div className="fixed inset-0 bg-black/50 flex items-center justify-center" onClick={onClose}>
                 <div className="relative bg-white p-6 rounded-2xl w-80">
-                    <button 
-                      onClick={onClose}
-                      className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <X size={20} />
-                    </button>
                     <h2 className="text-lg font-bold text-slate-900">記録が完了しました</h2>
                 </div>
             </div>
