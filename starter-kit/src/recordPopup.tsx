@@ -30,8 +30,11 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
           <li>時刻: {now.toLocaleString()}</li>
           <li>ステータス: 遅延</li>
         </ul>
+        {train.source === 'timetable' && (
+          <p className="mt-2 text-xs text-slate-400">※ 位置は時刻表ベースの推定です</p>
+        )}
         <h2 className="text-lg font-bold text-slate-900 space-y-2 mt-4">この電車で記録しますか？</h2>
-        <button onClick={() => {
+        <button type="button" onClick={() => {
             const newEntry = {
                 id: Date.now().toString(),
                 date: "6/17 (水)", // 本来は new Date() から作る
