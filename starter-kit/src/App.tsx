@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Home, ClipboardList, Settings } from 'lucide-react';
 import TimeLimit from './timeLimit';
 import StationsLine from './stations';
+import TrainInformation from './trainInformation';
 import Record from './record';
 import Setting from './setting';
 
@@ -37,6 +38,7 @@ function HomeScreen({ onAddRecord }) {
       </div>
 
       <TimeLimit />
+      <TrainInformation />
       <StationsLine onAddRecord={onAddRecord}/>
     </div>
   );
