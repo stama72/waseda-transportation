@@ -1,4 +1,5 @@
 import { Check, X } from 'lucide-react';
+import { useState } from 'react';
 
 // 記録（履歴）画面。過去にどの電車に乗ったかをさかのぼって確認するモック。
 // ※ データは仮置き。永続化やAPI連携は未実装。
@@ -14,7 +15,14 @@ type RecordEntry = {
   onTime: boolean;
 };
 
-export default function Record({ records }: { records: RecordEntry[] }) {
+type RecordProps = {
+  records: RecordEntry[];
+  clearRecord: () => void;
+};
+
+export default function Record({ records, clearRecord }: RecordProps) {
+  const [isRecordClear, setIsRecordClear] = useState(false);
+
   return (
     <div className="space-y-4">
       <header>
@@ -59,6 +67,35 @@ export default function Record({ records }: { records: RecordEntry[] }) {
           </li>
         ))}
       </ul>
+      <div  onClick={() => setIsRecordClear(true)} className="w-full rounded-xl bg-sky-500 py-3 my-4 text-sm text-center font-bold text-white shadow-sm active:bg-sky-600 active:scale-90 transition-transform">
+        <button>記録を削除</button>
+      </div>
+
+      {isRecordClear && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+                <div className="relative bg-white p-6 rounded-2xl w-80">
+                    <h2 className="text-lg font-bold text-slate-900">本当に記録を削除しますか？</h2>
+                    <div className="mt-6 flex flex-col gap-2">
+                    {/* 実際に削除を実行するボタン */}
+                    <button
+                      onClick={() => {
+                        clearRecord();        // 親(App.tsx)の削除関数を呼ぶ
+                        setIsRecordClear(false); // ポップアップを閉じる
+                      }}
+                      className="w-full bg-rose-500 text-white font-bold py-3 rounded-xl active:bg-rose-600"
+                    >
+                      削除する
+                    </button>
+                    <button
+                      onClick={() => setIsRecordClear(false)}
+                      className="w-full py-2 text-slate-400 text-sm"
+                    >
+                      キャンセル
+                    </button>
+                    </div>
+                </div>
+        </div>
+      )}
     </div>
   );
 }

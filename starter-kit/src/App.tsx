@@ -61,6 +61,12 @@ function App() {
     setRecords([entry, ...records]); // 最新を一番上にして保存
   };
 
+  //記録を削除するための関数←record.tsxで使う
+  const clearRecord = () =>{
+    localStorage.removeItem('train_records');
+    setRecords([]);
+  };
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-slate-50">
       {/* メインコンテンツ */}
@@ -68,7 +74,7 @@ function App() {
         {/* HomeScreen に onAddRecord をよこしている */}
         {activeTab === 'home' && <HomeScreen onAddRecord={addRecord} />}
         {/* record.tsx に records をよこしている */}
-        {activeTab === 'record' && <Record records={records} />}
+        {activeTab === 'record' && <Record records={records} clearRecord={clearRecord} />}
         {activeTab === 'setting' && <Setting />}
 
         <footer className="mt-12 text-center text-xs text-slate-400">
