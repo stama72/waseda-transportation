@@ -1,7 +1,14 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { Train } from './trains';
 
-export default function RecordPopup({ train, onClose, onAddRecord }) {
+type RecordPopupProps = {
+  train: Train;
+  onClose: () => void;
+  onAddRecord: (entry: any) => void;
+};
+
+export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopupProps) {
     const now = new Date();
     const [isSuccess, setIsSuccess] = useState(false);
 
