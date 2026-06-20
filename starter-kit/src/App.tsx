@@ -29,7 +29,7 @@ type RecordEntry = {
 };
 
 /** ホーム画面：Time Limit と路線図 */
-function HomeScreen({ onAddRecord }) {
+function HomeScreen({ onAddRecord }: { onAddRecord: (entry: RecordEntry) => void }) {
   return (
     <div className="space-y-4">
       {/* 路線シンボル（東西線） */}
