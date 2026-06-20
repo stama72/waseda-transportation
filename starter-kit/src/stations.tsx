@@ -115,11 +115,16 @@ export default function StationsLine({
           {/* 線路 */}
           <div className="absolute left-0 right-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-sky-400" />
 
-          {/* 列車マーカー（線路の上側に配置） */}
+          {/* 列車マーカー（方面別に線路の上下へ配置：西船橋方面=上、中野方面=下） */}
           {shownTrains.map((train) => (
             <div
               key={train.id}
-              className="absolute top-1/2 -translate-x-1/2 -translate-y-[180%] cursor-pointer active:scale-90 transition-transform"
+              className={[
+                'absolute top-1/2 -translate-x-1/2 cursor-pointer active:scale-90 transition-transform',
+                train.direction === 'nakano'
+                  ? 'translate-y-[100%]'
+                  : '-translate-y-[180%]',
+              ].join(' ')}
               style={{ left: stationLeftPx(train.position) }}
               onClick={() => setSelectedTrain(train)}
             >
