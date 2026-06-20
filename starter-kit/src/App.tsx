@@ -1,6 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Home, ClipboardList, Settings } from 'lucide-react';
-import TimeLimit from './timeLimit';
+
+// ❌ 変更前: import TimeLimit from './timeLimit';
+// ⭕️ 変更後: 時間を取得するコンポーネントをインポートする
+import TakadanobabaNextTrain from './lefttime'; 
+
 import StationsLine from './stations';
 import TrainInformation from './trainInformation';
 import Record from './record';
@@ -14,7 +18,6 @@ const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: 'setting', label: '設定', icon: Settings },
 ];
 
-//記録用の型を定義しました
 type RecordEntry = {
   id: string;
   date: string;
@@ -37,7 +40,10 @@ function HomeScreen({ onAddRecord }) {
         <span className="text-sm font-medium text-slate-600">東西線</span>
       </div>
 
-      <TimeLimit />
+      {/* ❌ 変更前: <TimeLimit /> */}
+      {/* ⭕️ 変更後: 時間を取得してタイマーに渡してくれる大元のコンポーネントを置く */}
+      <TakadanobabaNextTrain />
+      
       <TrainInformation />
       <StationsLine onAddRecord={onAddRecord}/>
     </div>
@@ -49,21 +55,17 @@ function App() {
 
   const [records, setRecords] = useState<RecordEntry[]>(() => {
     const saved = localStorage.getItem('train_records');
-    // もしデータがあればJSのオブジェクトに戻す。なければ空の配列。
     return saved ? JSON.parse(saved) : [];
   });
 
-  // records の中身が変化するたびに、ブラウザに保存する
   useEffect(() => {
     localStorage.setItem('train_records', JSON.stringify(records));
-  }, [records]); // records が変わったときだけ実行
+  }, [records]); 
 
-  // 新しい記録を追加するための関数←recordPopup.tsxで使う
   const addRecord = (entry: RecordEntry) => {
-    setRecords([entry, ...records]); // 最新を一番上にして保存
+    setRecords([entry, ...records]); 
   };
 
-  //記録を削除するための関数←record.tsxで使う
   const clearRecord = () =>{
     localStorage.removeItem('train_records');
     setRecords([]);
@@ -73,9 +75,7 @@ function App() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-slate-50">
       {/* メインコンテンツ */}
       <main className="flex-1 px-4 pb-24 pt-6">
-        {/* HomeScreen に onAddRecord をよこしている */}
         {activeTab === 'home' && <HomeScreen onAddRecord={addRecord} />}
-        {/* record.tsx に records をよこしている */}
         {activeTab === 'record' && <Record records={records} clearRecord={clearRecord} />}
         {activeTab === 'setting' && <Setting />}
 

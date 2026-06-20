@@ -356,3 +356,50 @@ export function calendarForDate(date: Date): 'odpt.Calendar:Weekday' | 'odpt.Cal
     ? 'odpt.Calendar:SaturdayHoliday'
     : 'odpt.Calendar:Weekday';
 }
+/**
+ * 指定した駅・方向の、直近の出発時刻（時刻表ベース）を取得する。
+ * @param stationId 基準にする駅のID（例: 'odpt.Station:TokyoMetro.Tozai.NishiFunabashi'）
+ * @param direction 進行方向
+ * @returns 次の発車時刻の文字列（例: "08:15"）。本日の最終電車が終わっている場合は null。
+ */
+export async function getNextDepartureTime(
+  stationId: string,
+  direction: 'nakano' | 'nishifunabashi'
+): Promise<string | null> {
+  const now = new Date();
+  // 現在時刻を「0時起点の分」に変換（例: 8時10分 -> 490）
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  
+  // 今日のカレンダー（平日 or 土日祝）を取得
+  const calendar = calendarForDate(now);
+  
+  // 今日の時刻表を全件取得
+  const timetables = await fetchTozaiTimetables(calendar);
+
+  let nextTrainMin = Infinity;
+
+  // 全ての列車の時刻表をループして、条件に合う最短の時間を探す
+  for (const tt of timetables) {
+    // 1. 進行方向が違う列車はスキップ
+    if (directionFromRail(tt.railDirection) !== direction) continue;
+
+    // 2. この列車が該当の駅に停車するか確認
+    const stop = tt.stops.find((s) => s.stationId === stationId);
+    if (!stop) continue;
+
+    // 3. 現在時刻以降で、かつ今まで見つけた時間より早いものを記録
+    // （※深夜の日跨ぎ考慮として、timeMinは24時以降を1440以上として扱っています）
+    if (stop.timeMin >= nowMin && stop.timeMin < nextTrainMin) {
+      nextTrainMin = stop.timeMin;
+    }
+  }
+
+  // もし該当する電車がない（終電後など）場合はnullを返す
+  if (nextTrainMin === Infinity) return null;
+
+  // 「分」の数値を "HH:MM" のフォーマットに戻す
+  const h = Math.floor(nextTrainMin / 60) % 24; // % 24 は 25:10 のような表記を 01:10 に直すため
+  const m = nextTrainMin % 60;
+  
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
