@@ -14,6 +14,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
             </div>
         );
     }
+    
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
       <div className="relative bg-white p-6 rounded-2xl w-80">
