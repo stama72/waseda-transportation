@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
+import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
 
 type RecordPopupProps = {
@@ -10,7 +11,13 @@ type RecordPopupProps = {
 
 export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopupProps) {
     const now = new Date();
+    const month = now.getMonth() + 1
+    const day =  now.getDate()
+    const week = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
+    const hour = String(now.getHours()).padStart(2, "0");
+    const minute = String(now.getMinutes()).padStart(2, "0");
     const [isSuccess, setIsSuccess] = useState(false);
+    const status = (DelayCheck(`${hour}:${minute}`)) ? "定刻" : "遅刻";
 
     if(isSuccess) {
         return (
@@ -27,7 +34,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopup
       <div className="relative bg-white p-6 rounded-2xl w-80">
         <button 
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors"
+          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors active:scale-90 transition-transform"
         >
           <X size={20} />
         </button>
@@ -36,7 +43,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopup
           <li>種別: {train.kind}</li>
           <li>行き先: {train.direction === 'nishifunabashi' ? '西船橋行' : '中野行'}</li>
           <li>時刻: {now.toLocaleString()}</li>
-          <li>ステータス: 遅延</li>
+          <li>ステータス: {status}</li>
         </ul>
         {train.source === 'timetable' && (
           <p className="mt-2 text-xs text-slate-400">※ 位置は時刻表ベースの推定です</p>
@@ -45,12 +52,12 @@ export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopup
         <button type="button" onClick={() => {
             const newEntry = {
                 id: Date.now().toString(),
-                date: "6/17 (水)", // 本来は new Date() から作る
-                station: "高田馬場",
+                date: `${month}/${day} (${week})`, // 本来は new Date() から作る
+                station: localStorage.getItem('nearestStation'),
                 kind: train.kind,
                 destination: "西船橋行",
-                boardedAt: "08:00",
-                onTime: true
+                boardedAt: `${hour}:${minute}`,
+                onTime: DelayCheck(`${hour}:${minute}`)
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);
