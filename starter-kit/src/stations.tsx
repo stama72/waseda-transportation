@@ -18,7 +18,7 @@ export type Station = {
 };
 
 // API取得に失敗した場合のフォールバック（ホーム周辺の3駅）。
-export const stations: Station[] = [
+export const mockStations: Station[] = [
   { id: 't03', code: 'T03', name: '高田馬場' },
   { id: 't04', code: 'T04', name: '早稲田' },
 ];
@@ -26,6 +26,23 @@ export const stations: Station[] = [
 // 横スクロールする路線図のレイアウト定数（ピクセル）。
 const SEGMENT_PX = 84; // 隣り合う駅の間隔
 const EDGE_PX = 44; // 路線両端の余白（端の駅が見切れないように）
+
+// ODPTから東西線の全駅を取得し、横スクロールで全駅を表示する。
+// 取得前・失敗時はモックの3駅にフォールバック。
+const { data: allStations } = useTozaiStations();
+const fullStations = allStations ?? mockStations;
+const count = fullStations.length;
+
+// 列車位置は3段フォールバック: ①odpt:Train（実位置）→ ②時刻表ベースの推定 → ③モック。
+  // 東京メトロは現状このAPIキーで①を返さないため、実質②（推定）が表示される。
+  // いずれも全駅インデックス基準の position を持ち、線路全体（横スクロール）に直接描画する。
+  const { data: odptTrains } = useTozaiTrains();
+  const { data: timetables } = useTozaiTimetables();
+
+  const indexById = allStations
+    ? new Map(allStations.map((s, i) => [s.id, i]))
+    : null;
+
 
 /** 駅インデックス(全駅基準)を線路上の左位置(px)に変換する */
 function stationLeftPx(index: number): number {
@@ -38,8 +55,8 @@ function trackWidthPx(count: number): number {
 }
 
 
-function getStationNameByCode(code: string, stations: Station[]): string {
-  const station = stations.find((s) => s.code === code);
+function getStationNameByCode(code: string): string {
+  const station = fullStations.find((s) => s.code === code);
   return station ? station.name : '';
 }
 
@@ -59,23 +76,8 @@ export default function StationsLine({
 }: StationsLineProps) {
   const [selectedTrain, setSelectedTrain] = useState<Train | null>(null);// 選択された列車のポップアップを表示する
 
-  // ODPTから東西線の全駅を取得し、横スクロールで全駅を表示する。
-  // 取得前・失敗時はモックの3駅にフォールバック。
-  const { data: allStations } = useTozaiStations();
-  const fullStations = allStations ?? stations;
-  const count = fullStations.length;
   const nearestIdx = fullStations.findIndex((s) => s.code === nearestStationCode);
-
-  // 列車位置は3段フォールバック: ①odpt:Train（実位置）→ ②時刻表ベースの推定 → ③モック。
-  // 東京メトロは現状このAPIキーで①を返さないため、実質②（推定）が表示される。
-  // いずれも全駅インデックス基準の position を持ち、線路全体（横スクロール）に直接描画する。
-  const { data: odptTrains } = useTozaiTrains();
-  const { data: timetables } = useTozaiTimetables();
   const nowMin = useNowMinutes();
-
-  const indexById = allStations
-    ? new Map(allStations.map((s, i) => [s.id, i]))
-    : null;
 
   // ① 実位置（odpt:Train）
   const realtimeTrains =
@@ -98,11 +100,6 @@ export default function StationsLine({
   }));
 
   const shownTrains = realtimeTrains ?? estimatedTrains ?? fallbackTrains;
-
-
-
-
-
 
   // 初回（および駅数が変わった）タイミングで最寄り駅が中央に来るよう横スクロール位置を合わせる。
   const scrollRef = useRef<HTMLDivElement>(null);

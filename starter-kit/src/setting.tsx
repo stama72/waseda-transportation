@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { stations } from './stations';
+import { mockStations } from './stations';
 import { useTozaiStations } from './useOdpt';
 
 interface Station {
@@ -14,7 +14,7 @@ interface Station {
 export default function Setting(): JSX.Element {
   // ODPTから東西線の全駅を取得。取得前・失敗時はモックの3駅にフォールバック。
   const { data: allStations } = useTozaiStations();
-  const fullStations: Station[] = allStations ?? stations;
+  const fullStations: Station[] = allStations ?? mockStations;
 
   const [nearestStation, setNearestStation] = useState<string>(
     () => {
@@ -77,7 +77,7 @@ export default function Setting(): JSX.Element {
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNearestStation(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           >
-            {stations.map((s: Station) => (
+            {mockStations.map((s: Station) => (
               <option key={s.id} value={s.id}>
                 {s.name}（{s.code}）
               </option>
