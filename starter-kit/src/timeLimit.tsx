@@ -1,71 +1,104 @@
 import { useState, useEffect } from 'react';
 
-type TimeLimitProps = {
-  /** 初期設定の秒数（テストしやすいように既定値を65秒にしています） */
-  initialSeconds?: number;
-};
-
-// ゼロ埋め関数（5を "05" にする）
+// ゼロ埋め関数
 function pad(n: number): string {
   return Math.max(0, Math.floor(n)).toString().padStart(2, '0');
 }
 
-export default function TimeLimit({ initialSeconds = 2 * 60 }: TimeLimitProps) {
-  // 時間の管理（ミリ秒）
-  const [timeLeftMs, setTimeLeftMs] = useState<number>(initialSeconds * 1000);
+// 外から受け取るデータ（Props）の型を定義
+type TimeLimitProps = {
+  targetTime?: string | null; // 例: "08:15"
+};
 
-  // タイマーのエンジン（0.01秒ごとに更新）
+export default function TimeLimit({ targetTime }: TimeLimitProps) {
+  const [timeLeftMs, setTimeLeftMs] = useState<number>(0);
+
+  // タイマーのエンジン
   useEffect(() => {
-    if (timeLeftMs <= 0) return;
+    if (!targetTime) {
+      setTimeLeftMs(0);
+      return;
+    }
+
+    const [h, m] = targetTime.split(':').map(Number);
+    const targetDate = new Date();
+    targetDate.setHours(h, m, 0, 0);
+
+    if (targetDate.getTime() < new Date().getTime() - 60000) {
+      targetDate.setDate(targetDate.getDate() + 1);
+    }
 
     const timerId = setInterval(() => {
-      setTimeLeftMs((prev) => prev - 10);
+      const now = new Date();
+      let diff = targetDate.getTime() - now.getTime();
+      if (diff < 0) diff = 0;
+      setTimeLeftMs(diff);
     }, 10);
 
     return () => clearInterval(timerId);
-  }, [timeLeftMs]);
+  }, [targetTime]);
 
-  // ① 1分（60,000ミリ秒）を切っているかどうかの判定
-  const isUnderOneMinute = timeLeftMs < 60000;
+  const isOverOneHour = timeLeftMs >= 3600000;
+  const isUnderOneMinute = timeLeftMs > 0 && timeLeftMs < 60000;
 
-  // 分・秒・ミリ秒の計算
-  const minutes = Math.floor(timeLeftMs / 60000);
+  const hours = Math.floor(timeLeftMs / 3600000);
+  const minutesOnly = Math.floor((timeLeftMs % 3600000) / 60000);
+  const totalMinutes = Math.floor(timeLeftMs / 60000);
   const seconds = Math.floor((timeLeftMs % 60000) / 1000);
   const ms = Math.floor((timeLeftMs % 1000) / 10);
 
-  // ② 表示する文字の切り替え
-  // 1分未満なら「59.99」、1分以上なら「01:05」
-  const display = isUnderOneMinute
-    ? `${pad(seconds)}.${pad(ms)}`
-    : `${pad(minutes)}:${pad(seconds)}`;
+  let displayStr = '';
+  let ghostStr = '';
 
-  // ③ ゴースト（背景）の切り替え
-  // 実際の文字に合わせて、背景も「.」か「:」を切り替える
-  const ghost = isUnderOneMinute ? '88.88' : '88:88';
+  if (!targetTime || timeLeftMs === 0) {
+    displayStr = '00:00';
+    ghostStr = '88:88';
+  } else if (isOverOneHour) {
+    displayStr = `${pad(hours)}:${pad(minutesOnly)}`;
+    ghostStr = '88:88';
+  } else if (isUnderOneMinute) {
+    displayStr = `${pad(seconds)}.${pad(ms)}`;
+    ghostStr = '88.88';
+  } else {
+    displayStr = `${pad(totalMinutes)}:${pad(seconds)}`;
+    ghostStr = '88:88';
+  }
+
+  const renderDigits = (str: string, isGhost: boolean) => (
+    <div
+      aria-hidden={isGhost ? true : undefined}
+      className={`flex justify-center text-8xl font-bold tracking-wider ${
+        isGhost ? 'text-slate-700/40' : 'absolute inset-0 text-red-500'
+      }`}
+      style={!isGhost ? { textShadow: '0 0 12px rgba(255, 0, 0, 0.6)' } : undefined}
+    >
+      {str.split('').map((char, index) => {
+        const isSeparator = char === ':' || char === '.';
+        return (
+          <span key={index} className={`inline-block text-center ${isSeparator ? 'w-[0.4ch]' : 'w-[1ch]'}`}>
+            {char}
+          </span>
+        );
+      })}
+    </div>
+  );
 
   return (
     <div className="rounded-2xl bg-slate-900 px-6 py-5 text-center shadow-md">
+      
+      
       <p className="mb-1 text-sm font-medium tracking-widest text-slate-400">
         Time Limit
       </p>
+      
       <div className="relative inline-block" style={{ fontFamily: 'DSDigital, monospace' }}>
-        {/* ゴースト（背景） */}
-        <span
-          aria-hidden
-          className="text-8xl font-bold tabular-nums tracking-wider text-slate-700/40"
-        >
-          {ghost}
-        </span>
-        {/* 実際の数値（赤色・発光） */}
-        <span
-          className="absolute inset-0 text-8xl font-bold tabular-nums tracking-wider text-red-500"
-          style={{ textShadow: '0 0 12px rgba(255, 0, 0, 0.6)' }}
-        >
-          {display}
-        </span>
+        {renderDigits(ghostStr, true)}
+        {renderDigits(displayStr, false)}
       </div>
-      <p className="mt-2 text-xs text-slate-400">
-        始業に間に合う最終電車まで
+      
+      {/* ついでに下のテキストも汎用的なものに変更しています */}
+      <p className="mt-3 text-xs text-slate-400">
+        出発までの残り時間
       </p>
     </div>
   );

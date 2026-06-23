@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
+import { Train } from './trains';
 
-export default function RecordPopup({ train, onClose, onAddRecord }) {
+type RecordPopupProps = {
+  train: Train;
+  onClose: () => void;
+  onAddRecord: (entry: any) => void;
+};
+
+export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopupProps) {
     const now = new Date();
     const month = now.getMonth() + 1
     const day =  now.getDate()
@@ -21,6 +28,7 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
             </div>
         );
     }
+    
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
       <div className="relative bg-white p-6 rounded-2xl w-80">

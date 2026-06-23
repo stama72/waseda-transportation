@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { stations } from './stations';
+import { useTozaiStations } from './useOdpt';
 
 interface Station {
   id: string;
@@ -11,9 +12,19 @@ interface Station {
 // ※ 入力値はローカルstateで保持するだけ。保存処理やバリデーションは未実装。
 
 export default function Setting(): JSX.Element {
+  // ODPTから東西線の全駅を取得。取得前・失敗時はモックの3駅にフォールバック。
+  const { data: allStations } = useTozaiStations();
+  const fullStations: Station[] = allStations ?? stations;
+
   const [nearestStation, setNearestStation] = useState<string>(
     () => {
       const savedStation = localStorage.getItem('nearestStation');
+      return savedStation ? savedStation : 't03';
+    }
+  );
+  const [transferStation, setTransferStation] = useState<string>(
+    () => {
+      const savedStation = localStorage.getItem('transferStation');
       return savedStation ? savedStation : 't03';
     }
   );
@@ -45,6 +56,7 @@ export default function Setting(): JSX.Element {
 
   async function saveSettings(): Promise<void> {
     localStorage.setItem('nearestStation', nearestStation);
+    localStorage.setItem('transferStation', transferStation);
     localStorage.setItem('direction', direction);
     localStorage.setItem('startTime', startTime);
     localStorage.setItem('walkMinutes', walkMinutes);
@@ -59,15 +71,31 @@ export default function Setting(): JSX.Element {
       </header>
 
       <div className="divide-y divide-slate-100 rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
-        {/* 最寄り駅 */}
+        {/* 大学の最寄り駅 */}
         <label className="flex items-center justify-between gap-3 p-4">
-          <span className="text-sm font-medium text-slate-700">最寄り駅</span>
+          <span className="text-sm font-medium text-slate-700">大学の最寄り駅</span>
           <select
             value={nearestStation}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNearestStation(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           >
             {stations.map((s: Station) => (
+              <option key={s.id} value={s.id}>
+                {s.name}（{s.code}）
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {/* 乗り換え駅 */}
+        <label className="flex items-center justify-between gap-3 p-4">
+          <span className="text-sm font-medium text-slate-700">乗り換え駅</span>
+          <select
+            value={transferStation}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTransferStation(e.target.value)}
+            className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
+          >
+            {fullStations.map((s: Station) => (
               <option key={s.id} value={s.id}>
                 {s.name}（{s.code}）
               </option>
