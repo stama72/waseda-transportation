@@ -71,7 +71,7 @@ export default function Setting(): JSX.Element {
       <div className="divide-y divide-slate-100 rounded-2xl bg-white shadow-sm ring-1 ring-slate-100">
         {/* 大学の最寄り駅 */}
         <label className="flex items-center justify-between gap-3 p-4">
-          <span className="text-sm font-medium text-slate-700">大学の最寄り駅</span>
+          <span className="text-sm font-medium text-slate-700">降りる駅(大学の最寄り駅)</span>
           <select
             value={nearestStation}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setNearestStation(e.target.value)}
@@ -85,9 +85,9 @@ export default function Setting(): JSX.Element {
           </select>
         </label>
 
-        {/* 乗り換え駅 */}
+        {/* 乗る駅 */}
         <label className="flex items-center justify-between gap-3 p-4">
-          <span className="text-sm font-medium text-slate-700">乗り換え駅</span>
+          <span className="text-sm font-medium text-slate-700">乗る駅</span>
           <select
             value={transferStation}
             onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setTransferStation(e.target.value)}
@@ -141,7 +141,7 @@ export default function Setting(): JSX.Element {
         </label>
 
         {/* 通知 */}
-        <div className="flex items-center justify-between gap-3 p-4">
+{/*        <div className="flex items-center justify-between gap-3 p-4">
           <span className="text-sm font-medium text-slate-700">出発リマインド通知</span>
           <button
             type="button"
@@ -159,7 +159,7 @@ export default function Setting(): JSX.Element {
               ].join(' ')}
             />
           </button>
-        </div>
+        </div>*/}
       </div>
 
       <button

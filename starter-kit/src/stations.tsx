@@ -21,7 +21,6 @@ export type Station = {
 export const stations: Station[] = [
   { id: 't03', code: 'T03', name: '高田馬場' },
   { id: 't04', code: 'T04', name: '早稲田' },
-  { id: 't05', code: 'T05', name: '神楽坂' },
 ];
 
 // 横スクロールする路線図のレイアウト定数（ピクセル）。
@@ -37,6 +36,13 @@ function stationLeftPx(index: number): number {
 function trackWidthPx(count: number): number {
   return EDGE_PX * 2 + Math.max(0, count - 1) * SEGMENT_PX;
 }
+
+
+function getStationNameByCode(code: string, stations: Station[]): string {
+  const station = stations.find((s) => s.code === code);
+  return station ? station.name : '';
+}
+
 
 type StationsLineProps = {
   trains?: Train[];
@@ -93,6 +99,11 @@ export default function StationsLine({
 
   const shownTrains = realtimeTrains ?? estimatedTrains ?? fallbackTrains;
 
+
+
+
+
+
   // 初回（および駅数が変わった）タイミングで最寄り駅が中央に来るよう横スクロール位置を合わせる。
   const scrollRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -101,6 +112,14 @@ export default function StationsLine({
     el.scrollLeft = Math.max(0, stationLeftPx(nearestIdx) - el.clientWidth / 2);
   }, [count, nearestIdx]);
 
+
+  // 時刻に間に合う最終電車をピックアップ
+/*
+  const finalTrain = trains.map((t) => ({
+    ...t,
+    position: t.position + Math.max(0, nearestIdx - 1),
+  })).filter((t) => isFinalTrain(t));
+*/
   return (
     <div className="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-100">
       {/* 方面ラベル */}
