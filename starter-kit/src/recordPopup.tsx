@@ -3,6 +3,8 @@ import { X } from 'lucide-react';
 
 export default function RecordPopup({ train, onClose, onAddRecord }) {
     const now = new Date();
+    const month = now.getMonth() + 1
+    const day =  now.getDate()
     const [isSuccess, setIsSuccess] = useState(false);
 
     if(isSuccess) {
@@ -37,8 +39,8 @@ export default function RecordPopup({ train, onClose, onAddRecord }) {
         <button type="button" onClick={() => {
             const newEntry = {
                 id: Date.now().toString(),
-                date: "6/17 (水)", // 本来は new Date() から作る
-                station: "高田馬場",
+                date: '${"month"}/${"day"} (水)', // 本来は new Date() から作る
+                station: "池袋",
                 kind: train.kind,
                 destination: "西船橋行",
                 boardedAt: "08:00",
