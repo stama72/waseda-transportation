@@ -41,6 +41,8 @@ export default function Setting(): JSX.Element {
       return savedNotify ? JSON.parse(savedNotify) : true;
     }
   );
+  const [complete, setComplete] = useState(false)
+
   async function saveSettings(): Promise<void> {
     localStorage.setItem('nearestStation', nearestStation);
     localStorage.setItem('direction', direction);
@@ -135,11 +137,19 @@ export default function Setting(): JSX.Element {
       </div>
 
       <button
-        type="button" onClick={saveSettings} 
-        className="w-full rounded-xl bg-sky-500 py-3 text-sm font-bold text-white shadow-sm active:bg-sky-600"
+        type="button" onClick={() => {saveSettings(); setComplete(true);}}
+        className="w-full rounded-xl bg-sky-500 py-3 text-sm font-bold text-white shadow-sm active:bg-sky-600 active:scale-90 transition-transform"
       >
         保存する
       </button>
+
+      {complete && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center" onClick={() => setComplete(false)}>
+                <div className="relative bg-white p-6 rounded-2xl w-80">
+                    <h2 className="text-lg font-bold text-slate-900">記録が完了しました</h2>
+                </div>
+            </div>
+      )}
     </div>
   );
 }

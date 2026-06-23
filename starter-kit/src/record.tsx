@@ -82,13 +82,13 @@ export default function Record({ records, clearRecord }: RecordProps) {
                         clearRecord();        // 親(App.tsx)の削除関数を呼ぶ
                         setIsRecordClear(false); // ポップアップを閉じる
                       }}
-                      className="w-full bg-rose-500 text-white font-bold py-3 rounded-xl active:bg-rose-600"
+                      className="w-full bg-rose-500 text-white font-bold py-3 rounded-xl active:bg-rose-600 active:scale-90 transition-transform"
                     >
                       削除する
                     </button>
                     <button
                       onClick={() => setIsRecordClear(false)}
-                      className="w-full py-2 text-slate-400 text-sm"
+                      className="w-full py-2 text-slate-400 text-sm active:scale-90 transition-transform"
                     >
                       キャンセル
                     </button>
