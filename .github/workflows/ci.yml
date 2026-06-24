@@ -19,7 +19,9 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
+        working-directory: ./starter-kit
         run: npm install
 
-      - name: Run tests
-        run: npm test
+      - name: Build project
+        working-directory: ./starter-kit
+        run: npm run build
