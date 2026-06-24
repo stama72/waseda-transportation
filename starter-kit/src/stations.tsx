@@ -39,7 +39,11 @@ function trackWidthPx(count: number): number {
 }
 
 
-export function getStationNameByCode(code: string, stations: Station[] = mockStations): string {
+/**
+ * 駅ナンバリング（またはID）から駅名を引く純粋関数。
+ * 駅データは静的なので、呼び出し側で一度だけ取得したものを渡して使いまわす。
+ */
+export function getStationNameByCode(code: string, stations: Station[]): string {
   const normalized = code ?? '';
   const station = stations.find((s) => s.code === normalized || s.id === normalized);
   return station ? station.name : '';
