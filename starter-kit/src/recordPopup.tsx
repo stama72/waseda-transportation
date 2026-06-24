@@ -2,16 +2,14 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
-import { getStationNameByCode, Station } from './stations';
 
 type RecordPopupProps = {
   train: Train;
   onClose: () => void;
   onAddRecord: (entry: any) => void;
-  stations?: Station[];
 };
 
-export default function RecordPopup({ train, onClose, onAddRecord, stations }: RecordPopupProps) {
+export default function RecordPopup({ train, onClose, onAddRecord }: RecordPopupProps) {
     const now = new Date();
     const month = now.getMonth() + 1
     const day =  now.getDate()
@@ -55,7 +53,7 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations }: R
             const newEntry = {
                 id: Date.now().toString(),
                 date: `${month}/${day} (${week})`, // 本来は new Date() から作る
-                station: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
+                station: localStorage.getItem('nearestStation'),
                 kind: train.kind,
                 destination: "西船橋行",
                 boardedAt: `${hour}:${minute}`,
