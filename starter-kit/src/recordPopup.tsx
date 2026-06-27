@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
-import { getStationNameByCode, Station } from './stations';
+import { getStationNameByCode, mockStations, Station } from './stations';
 
 type RecordPopupProps = {
   train: Train;
@@ -11,7 +11,7 @@ type RecordPopupProps = {
   stations?: Station[];
 };
 
-export default function RecordPopup({ train, onClose, onAddRecord, stations }: RecordPopupProps) {
+export default function RecordPopup({ train, onClose, onAddRecord, stations = mockStations }: RecordPopupProps) {
     const now = new Date();
     const month = now.getMonth() + 1
     const day =  now.getDate()

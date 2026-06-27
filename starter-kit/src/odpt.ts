@@ -279,7 +279,7 @@ function parseTimetable(res: TrainTimetableResponse): TozaiTimetable {
   }
 
   return {
-    id: res['odpt:trainNumber'] ?? res['owl:sameAs'],
+    id: res['owl:sameAs'],
     railDirection: res['odpt:railDirection'],
     trainType: res['odpt:trainType'],
     stops,
@@ -403,3 +403,99 @@ export async function getNextDepartureTime(
   
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
+
+/**
+ * 指定した駅・方向の、指定した時刻以前で最後の出発電車（時刻表ベース）を取得する。
+ * @param stationId 基準にする駅のID（例: 'odpt.Station:TokyoMetro.Tozai.NishiFunabashi'）
+ * @param direction 進行方向
+ * @param timeLimit 制限する時刻（この時刻以前の電車を探す）
+ * @returns 次の発車時刻の文字列（例: "08:15"）。本日の最終電車が終わっている場合は null。
+ */
+export async function getLastDepartureTime(
+  stationId: string,
+  direction: 'nakano' | 'nishifunabashi',
+  timeLimit: Date
+): Promise<string | null> {
+  // 現在時刻を「0時起点の分」に変換（例: 8時10分 -> 490）
+  const nowMin = timeLimit.getHours() * 60 + timeLimit.getMinutes();
+  
+  // 今日のカレンダー（平日 or 土日祝）を取得
+  const calendar = calendarForDate(timeLimit);
+  
+  // 今日の時刻表を全件取得
+  const timetables = await fetchTozaiTimetables(calendar);
+
+  let lastTrainMin = -Infinity;
+  let lastTrainid = null;
+
+  // 全ての列車の時刻表をループして、条件に合う最短の時間を探す
+  for (const tt of timetables) {
+    // 1. 進行方向が違う列車はスキップ
+    if (directionFromRail(tt.railDirection) !== direction) continue;
+
+    // 2. この列車が該当の駅に停車するか確認
+    const stop = tt.stops.find((s) => s.stationId === stationId);
+    if (!stop) continue;
+
+    // 3. 現在時刻以前で、かつ今まで見つけた時間より遅いものを記録
+    // （※深夜の日跨ぎ考慮として、timeMinは24時以降を1440以上として扱っています）
+    if (stop.timeMin <= nowMin && stop.timeMin > lastTrainMin) {
+      lastTrainMin = stop.timeMin;
+      lastTrainid = tt.id;
+    }
+  }
+
+  // もし該当する電車がない（終電後など）場合はnullを返す
+  return lastTrainid;
+}
+
+/**
+ * 指定された電車が指定された駅を発車する時刻を特定する 
+ * @param stationId 基準にする駅のID（例: 'odpt.Station:TokyoMetro.Tozai.NishiFunabashi'）
+ * @param direction 進行方向
+ * @param trainid 電車のID(odpt:Train owl:sameAs)
+ * @returns 次の発車時刻の文字列（例: "08:15"）。本日の最終電車が終わっている場合は null。
+ */
+export async function getDepartureTime(
+  stationId: string,
+  trainid: string,
+): Promise<string | null> {
+  const now = new Date();
+  // 現在時刻を「0時起点の分」に変換（例: 8時10分 -> 490）
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+  
+  // 今日のカレンダー（平日 or 土日祝）を取得
+  const calendar = calendarForDate(now);
+  
+  // 今日の時刻表を全件取得
+  const timetables = await fetchTozaiTimetables(calendar);
+
+  let nextTrainMin = Infinity;
+
+  // 全ての列車の時刻表をループして、条件に合う最短の時間を探す
+  for (const tt of timetables) {
+    // 1. 指定された列車以外はスキップ
+    if (tt.id !== trainid) continue;
+
+    // 2. この列車が該当の駅に停車するか確認
+    const stop = tt.stops.find((s) => s.stationId === stationId);
+    if (!stop) continue;
+
+    // 3. 現在時刻以降で、かつ今まで見つけた時間より早いものを記録
+    // （※深夜の日跨ぎ考慮として、timeMinは24時以降を1440以上として扱っています）
+    if (stop.timeMin >= nowMin && stop.timeMin < nextTrainMin) {
+      nextTrainMin = stop.timeMin;
+    }
+  }
+
+  // もし該当する電車がない（終電後など）場合はnullを返す
+  if (nextTrainMin === Infinity) return null;
+
+  // 「分」の数値を "HH:MM" のフォーマットに戻す
+  const h = Math.floor(nextTrainMin / 60) % 24; // % 24 は 25:10 のような表記を 01:10 に直すため
+  const m = nextTrainMin % 60;
+  
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+
