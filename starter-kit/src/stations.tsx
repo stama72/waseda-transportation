@@ -44,8 +44,12 @@ function trackWidthPx(count: number): number {
  * 駅データは静的なので、呼び出し側で一度だけ取得したものを渡して使いまわす。
  */
 export function getStationNameByCode(code: string, stations: Station[]): string {
-  const normalized = code ?? '';
-  const station = stations.find((s) => s.code === normalized || s.id === normalized);
+  // 設定画面では小文字の id（例 't04'）が保存されるが、ODPT 由来の駅データは
+  // code が大文字（'T04'）・id が URN なので、大文字小文字を無視して照合する。
+  const normalized = (code ?? '').toLowerCase();
+  const station = stations.find(
+    (s) => s.code.toLowerCase() === normalized || s.id.toLowerCase() === normalized,
+  );
   return station ? station.name : '';
 }
 

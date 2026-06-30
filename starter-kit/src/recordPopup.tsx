@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
 import { getStationNameByCode, mockStations, Station } from './stations';
+import { getDepartureTime} from './odpt';
 
 type RecordPopupProps = {
   train: Train;
@@ -16,10 +17,16 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     const month = now.getMonth() + 1
     const day =  now.getDate()
     const week = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
-    const hour = String(now.getHours()).padStart(2, "0");
-    const minute = String(now.getMinutes()).padStart(2, "0");
+    
+    const [arivalTime, setArivalTime] = useState("00:00");
+
+    useEffect(() => {
+        getDepartureTime(train.id, localStorage.getItem('destinationStation') ?? "T04")
+            .then((time) => setArivalTime(time ?? "00:00"));
+    }, [train.id]);
+
     const [isSuccess, setIsSuccess] = useState(false);
-    const status = (DelayCheck(`${hour}:${minute}`)) ? "定刻" : "遅刻";
+    const status = (DelayCheck(arivalTime)) ? "定刻" : "遅刻";
 
     if(isSuccess) {
         return (
@@ -55,11 +62,13 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
             const newEntry = {
                 id: Date.now().toString(),
                 date: `${month}/${day} (${week})`, // 本来は new Date() から作る
-                station: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
+                boardedStation: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
+                arivalStation: getStationNameByCode(localStorage.getItem('destinationStation') ?? 'T04', stations),
                 kind: train.kind,
                 destination: "西船橋行",
-                boardedAt: `${hour}:${minute}`,
-                onTime: DelayCheck(`${hour}:${minute}`)
+                arivalDate: `${month}/${day} (${week})`,
+                arrivedAt: arivalTime,
+                onTime: DelayCheck(arivalTime)
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);

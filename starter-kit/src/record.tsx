@@ -4,13 +4,14 @@ import { useState } from 'react';
 // 記録（履歴）画面。過去にどの電車に乗ったかをさかのぼって確認するモック。
 // ※ データは仮置き。永続化やAPI連携は未実装。
 
-type RecordEntry = {
+export type RecordEntry = {
   id: string;
-  date: string;
-  station: string;
+  arivalDate: string;
+  arrivedAt: string;
+  arivalStation: string;
+  boardedStation: string;
   kind: string;
   destination: string;
-  boardedAt: string;
   /** 始業に間に合ったか */
   onTime: boolean;
 };
@@ -55,13 +56,11 @@ export default function Record({ records, clearRecord }: RecordProps) {
 
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-bold text-slate-900">{r.date}</span>
-                <span className="font-mono text-sm tabular-nums text-slate-700">
-                  {r.boardedAt}
-                </span>
+                <span className="text-sm font-bold text-slate-900">{r.arivalDate}</span>
+                <span className="text-sm font-bold text-slate-900">{r.arrivedAt}</span>
               </div>
               <p className="truncate text-xs text-slate-500">
-                {r.station}駅 ・ {r.kind} {r.destination}
+                {r.boardedStation}駅 → {r.arivalStation}駅 ・ {r.kind} {r.destination}
               </p>
             </div>
           </li>

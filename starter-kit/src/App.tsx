@@ -7,7 +7,7 @@ import TakadanobabaNextTrain from './lefttime';
 
 import StationsLine from './stations';
 import TrainInformation from './trainInformation';
-import Record from './record';
+import Record, { RecordEntry } from './record';
 import Setting from './setting';
 
 type Tab = 'home' | 'record' | 'setting';
@@ -17,16 +17,6 @@ const tabs: { id: Tab; label: string; icon: typeof Home }[] = [
   { id: 'record', label: '記録', icon: ClipboardList },
   { id: 'setting', label: '設定', icon: Settings },
 ];
-
-type RecordEntry = {
-  id: string;
-  date: string;
-  station: string;
-  kind: string;
-  destination: string;
-  boardedAt: string;
-  onTime: boolean;
-};
 
 /** ホーム画面：Time Limit と路線図 */
 function HomeScreen({ onAddRecord }: { onAddRecord: (entry: RecordEntry) => void }) {
