@@ -26,7 +26,7 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
         const destCode = localStorage.getItem('destinationStation') ?? "T04";
         const destStationId = getStationIdByCode(destCode, stations);
         if (!destStationId) return;
-        // getDepartureTime(stationId, trainid) の順。以前は引数が逆で常に null を返していた。
+        // getDepartureTime(stationId, trainid) の順。
         getDepartureTime(destStationId, train.id)
             .then((time) => setarrivalAt(time ?? "00:00"));
     }, [train.id, stations]);
@@ -57,7 +57,7 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
         <ul className="mt-4 space-y-2 text-sm text-slate-700">
           <li>種別: {train.kind}</li>
           <li>行き先: {train.direction === 'nishifunabashi' ? '西船橋行' : '中野行'}</li>
-          <li>時刻: {now.toLocaleString()}</li>
+          <li>{getStationNameByCode(localStorage.getItem('destinationStation') ?? 'T04', stations)}駅到着: {arrivalAt}</li>
           <li>ステータス: {status}</li>
         </ul>
         {train.source === 'timetable' && (
