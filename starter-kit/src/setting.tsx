@@ -16,9 +16,9 @@ export default function Setting(): JSX.Element {
   const { data: allStations } = useTozaiStations();
   const fullStations: Station[] = allStations ?? mockStations;
 
-  const [destination, setDestination] = useState<string>(
+  const [destinationStation, setDestinationStation] = useState<string>(
     () => {
-      const savedStation = localStorage.getItem('destination');
+      const savedStation = localStorage.getItem('destinationStation');
       return savedStation ? savedStation : 't03';
     }
   );
@@ -55,7 +55,7 @@ export default function Setting(): JSX.Element {
   const [complete, setComplete] = useState(false)
 
   async function saveSettings(): Promise<void> {
-    localStorage.setItem('destination', destination);
+    localStorage.setItem('destinationStation', destinationStation);
     localStorage.setItem('transferStation', transferStation);
     localStorage.setItem('direction', direction);
     localStorage.setItem('startTime', startTime);
@@ -75,8 +75,8 @@ export default function Setting(): JSX.Element {
         <label className="flex items-center justify-between gap-3 p-4">
           <span className="text-sm font-medium text-slate-700">降りる駅(大学の最寄り駅)</span>
           <select
-            value={destination}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDestination(e.target.value)}
+            value={destinationStation}
+            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setDestinationStation(e.target.value)}
             className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm text-slate-900"
           >
             {mockStations.map((s: Station) => (

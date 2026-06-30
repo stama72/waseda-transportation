@@ -3,7 +3,7 @@
 // 各画面のフォールバック値と矛盾しないよう、初期値はここに集約する。
 
 export const DEFAULT_SETTINGS = {
-  destination: 't03',          // 降りる駅(大学の最寄り駅)
+  destinationStation: 't03',          // 降りる駅(大学の最寄り駅)
   transferStation: 't02',      // 乗る駅
   direction: 'nishifunabashi', // 方面
   startTime: '08:50',          // 始業時間
