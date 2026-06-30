@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
-import { getStationNameByCode, mockStations, Station } from './stations';
+import { getStationIdByCode, getStationNameByCode, mockStations, Station } from './stations';
 import { getDepartureTime} from './odpt';
 
 type RecordPopupProps = {
@@ -18,15 +18,21 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     const day =  now.getDate()
     const week = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
     
-    const [arivalTime, setArivalTime] = useState("00:00");
+    const [arrivalAt, setarrivalAt] = useState("00:00");
 
     useEffect(() => {
-        getDepartureTime(train.id, localStorage.getItem('destinationStation') ?? "T04")
-            .then((time) => setArivalTime(time ?? "00:00"));
-    }, [train.id]);
+        // destinationStation は 't04' のような駅コードで保存されるが、時刻表APIの駅IDは
+        // URN 形式（odpt.Station:...）なので、フル駅IDへ変換してから渡す。
+        const destCode = localStorage.getItem('destinationStation') ?? "T04";
+        const destStationId = getStationIdByCode(destCode, stations);
+        if (!destStationId) return;
+        // getDepartureTime(stationId, trainid) の順。以前は引数が逆で常に null を返していた。
+        getDepartureTime(destStationId, train.id)
+            .then((time) => setarrivalAt(time ?? "00:00"));
+    }, [train.id, stations]);
 
     const [isSuccess, setIsSuccess] = useState(false);
-    const status = (DelayCheck(arivalTime)) ? "定刻" : "遅刻";
+    const status = (DelayCheck(arrivalAt)) ? "定刻" : "遅刻";
 
     if(isSuccess) {
         return (
@@ -63,12 +69,12 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
                 id: Date.now().toString(),
                 date: `${month}/${day} (${week})`, // 本来は new Date() から作る
                 boardedStation: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
-                arivalStation: getStationNameByCode(localStorage.getItem('destinationStation') ?? 'T04', stations),
+                arrivalStation: getStationNameByCode(localStorage.getItem('destinationStation') ?? 'T04', stations),
                 kind: train.kind,
                 destination: "西船橋行",
-                arivalDate: `${month}/${day} (${week})`,
-                arrivedAt: arivalTime,
-                onTime: DelayCheck(arivalTime)
+                arrivalDate: `${month}/${day} (${week})`,
+                arrivedAt: arrivalAt,
+                onTime: DelayCheck(arrivalAt)
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);

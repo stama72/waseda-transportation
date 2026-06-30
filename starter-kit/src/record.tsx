@@ -6,9 +6,9 @@ import { useState } from 'react';
 
 export type RecordEntry = {
   id: string;
-  arivalDate: string;
+  arrivalDate: string;
   arrivedAt: string;
-  arivalStation: string;
+  arrivalStation: string;
   boardedStation: string;
   kind: string;
   destination: string;
@@ -56,11 +56,11 @@ export default function Record({ records, clearRecord }: RecordProps) {
 
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-bold text-slate-900">{r.arivalDate}</span>
+                <span className="text-sm font-bold text-slate-900">{r.arrivalDate}</span>
                 <span className="text-sm font-bold text-slate-900">{r.arrivedAt}</span>
               </div>
               <p className="truncate text-xs text-slate-500">
-                {r.boardedStation}駅 → {r.arivalStation}駅 ・ {r.kind} {r.destination}
+                {r.boardedStation}駅 → {r.arrivalStation}駅 ・ {r.kind} {r.destination}
               </p>
             </div>
           </li>
