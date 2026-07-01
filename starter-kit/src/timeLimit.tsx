@@ -74,8 +74,13 @@ export default function TimeLimit({ targetTime }: TimeLimitProps) {
     >
       {str.split('').map((char, index) => {
         const isSeparator = char === ':' || char === '.';
+        const alignWithGhost = !isGhost && char === '1';
         return (
-          <span key={index} className={`inline-block text-center ${isSeparator ? 'w-[0.4ch]' : 'w-[1ch]'}`}>
+          <span
+            key={index}
+            className={`inline-block text-center ${isSeparator ? 'w-[0.4ch]' : 'w-[1ch]'}`}
+            style={alignWithGhost ? { transform: 'translateX(0.32ch)' } : undefined}
+          >
             {char}
           </span>
         );
