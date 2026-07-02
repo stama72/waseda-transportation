@@ -20,8 +20,8 @@ export type Station = {
 
 // API取得に失敗した場合のフォールバック（ホーム周辺の3駅）。
 export const mockStations: Station[] = [
-  { id: 't03', code: 'T03', name: '高田馬場' },
-  { id: 't04', code: 'T04', name: '早稲田' },
+  { id: 'T03', code: 'T03', name: '高田馬場' },
+  { id: 'T04', code: 'T04', name: '早稲田' },
 ];
 
 // 横スクロールする路線図のレイアウト定数（ピクセル）。
@@ -45,9 +45,27 @@ function trackWidthPx(count: number): number {
  * 駅データは静的なので、呼び出し側で一度だけ取得したものを渡して使いまわす。
  */
 export function getStationNameByCode(code: string, stations: Station[]): string {
-  const normalized = code ?? '';
-  const station = stations.find((s) => s.code === normalized || s.id === normalized);
+  // 設定画面では小文字の id（例 't04'）が保存されるが、ODPT 由来の駅データは
+  // code が大文字（'T04'）・id が URN なので、大文字小文字を無視して照合する。
+  const normalized = (code ?? '').toLowerCase();
+  const station = stations.find(
+    (s) => s.code.toLowerCase() === normalized || s.id.toLowerCase() === normalized,
+  );
   return station ? station.name : '';
+}
+
+/**
+ * 駅ナンバリング（またはID）から ODPT のフル駅ID（例
+ * 'odpt.Station:TokyoMetro.Tozai.Waseda'）を引く純粋関数。
+ * 設定画面は小文字の id（例 't04'）を保存する一方、時刻表APIの駅IDは URN 形式
+ * なので、時刻表照合に使う前にこの関数でフルIDへ変換する。見つからなければ null。
+ */
+export function getStationIdByCode(code: string, stations: Station[]): string | null {
+  const normalized = (code ?? '').toLowerCase();
+  const station = stations.find(
+    (s) => s.code.toLowerCase() === normalized || s.id.toLowerCase() === normalized,
+  );
+  return station ? station.id : null;
 }
 
 

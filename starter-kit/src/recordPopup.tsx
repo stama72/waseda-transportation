@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
-import { getStationNameByCode, mockStations, Station } from './stations';
-import { getDepartureTime } from './odpt';
+import { getStationIdByCode, getStationNameByCode, mockStations, Station } from './stations';
+import { getDepartureTime} from './odpt';
 
 type RecordPopupProps = {
   train: Train;
@@ -17,39 +17,23 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     const month = now.getMonth() + 1
     const day =  now.getDate()
     const week = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
-    const hour = String(now.getHours()).padStart(2, "0");
-    const minute = String(now.getMinutes()).padStart(2, "0");
-    const [isSuccess, setIsSuccess] = useState(false);
-    const [isOnTime, setIsOnTime] = useState<boolean | null>(null);
-    const status = isOnTime === null ? "確認中..." : (isOnTime ? "定刻" : "遅刻");
-    const [arrivalTime, setArrivalTime] = useState<string | null>(null);
-
-    // ポップアップが開いたときに判定を実行する
+    
+    const [arrivalAt, setarrivalAt] = useState("00:00");
+    const [boardingStationId, setboradingStationId] = localStorage.getItem('transferStation') ?? 'T04';
+  
     useEffect(() => {
-    const check = async () => {
-    // 1. localStorage から目的地（t03など）を取る
-    const destCode = localStorage.getItem('destination') ?? "t03";
+        // destinationStation は 't04' のような駅コードで保存されるが、時刻表APIの駅IDは
+        // URN 形式（odpt.Station:...）なので、フル駅IDへ変換してから渡す。
+        const destCode = localStorage.getItem('destinationStation') ?? "T04";
+        const destStationId = getStationIdByCode(destCode, stations);
+        if (!destStationId) return;
+        // getDepartureTime(stationId, trainid) の順。
+        getDepartureTime(destStationId, train.id)
+            .then((time) => setarrivalAt(time ?? "00:00"));
+    }, [train.id, stations]);
 
-    // 2. stations（対応表）の中から、t03 に対応する「長いID」を見つける
-    const targetStation = stations.find(s => 
-      s.code.toLowerCase() === destCode.toLowerCase() || s.id === destCode
-    );
-
-    // 3. 長いIDが見つかったら、それを使って時刻を計算する
-    if (targetStation) {
-      // DelayCheck に長いID（targetStation.id）を渡す
-      const result = await DelayCheck({ trainId: train.id, targetId: targetStation.id });
-      setIsOnTime(result);
-
-      // getDepartureTime にも長いID（targetStation.id）を渡す
-      const time = await getDepartureTime(targetStation.id, train.id);
-      setArrivalTime(time);
-    } else {
-      setArrivalTime("駅不明");
-    }
-  };
-  check();
-}, [train.id, stations]);
+    const [isSuccess, setIsSuccess] = useState(false);
+    const status = (DelayCheck(arrivalAt)) ? "定刻" : "遅刻";
 
     if(isSuccess) {
         return (
@@ -74,8 +58,8 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
         <ul className="mt-4 space-y-2 text-sm text-slate-700">
           <li>種別: {train.kind}</li>
           <li>行き先: {train.direction === 'nishifunabashi' ? '西船橋行' : '中野行'}</li>
-          <li>乗車駅: {getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations)}</li>
-          <li>時刻: {now.toLocaleString()}</li>
+          <li>乗車駅: {getStationNameByCode(boardingStationId)}</li>
+          <li>乗車時刻: {getDepartureTime(boardingStationId, train.id)}</li>
           <li>到着予定時刻: {arrivalTime ?? "確認中..."} </li>
           <li>ステータス: {status}</li>
         </ul>
@@ -87,11 +71,13 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
             const newEntry = {
                 id: Date.now().toString(),
                 date: `${month}/${day} (${week})`, // 本来は new Date() から作る
-                station: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
+                boardedStation: getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations),
+                arrivalStation: getStationNameByCode(localStorage.getItem('destinationStation') ?? 'T04', stations),
                 kind: train.kind,
                 destination: "西船橋行",
-                boardedAt: `${hour}:${minute}`,
-                onTime: isOnTime,
+                arrivalDate: `${month}/${day} (${week})`,
+                arrivedAt: arrivalAt,
+                onTime: status
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);
