@@ -8,6 +8,7 @@ import {
   useNowMinutes,
 } from './useOdpt';
 import { odptTrainToPosition, estimateTrainsFromTimetable } from './odpt';
+import { DelayCheck } from './delayCheck';
 
 // 東西線（Tozai Line）の駅データ。
 export type Station = {

@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import { DelayCheck } from './delayCheck';
 import { Train } from './trains';
 import { getStationNameByCode, mockStations, Station } from './stations';
+import { getDepartureTime } from './odpt';
 
 type RecordPopupProps = {
   train: Train;
@@ -19,7 +20,36 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     const hour = String(now.getHours()).padStart(2, "0");
     const minute = String(now.getMinutes()).padStart(2, "0");
     const [isSuccess, setIsSuccess] = useState(false);
-    const status = (DelayCheck(`${hour}:${minute}`)) ? "定刻" : "遅刻";
+    const [isOnTime, setIsOnTime] = useState<boolean | null>(null);
+    const status = isOnTime === null ? "確認中..." : (isOnTime ? "定刻" : "遅刻");
+    const [arrivalTime, setArrivalTime] = useState<string | null>(null);
+
+    // ポップアップが開いたときに判定を実行する
+    useEffect(() => {
+    const check = async () => {
+    // 1. localStorage から目的地（t03など）を取る
+    const destCode = localStorage.getItem('destination') ?? "t03";
+
+    // 2. stations（対応表）の中から、t03 に対応する「長いID」を見つける
+    const targetStation = stations.find(s => 
+      s.code.toLowerCase() === destCode.toLowerCase() || s.id === destCode
+    );
+
+    // 3. 長いIDが見つかったら、それを使って時刻を計算する
+    if (targetStation) {
+      // DelayCheck に長いID（targetStation.id）を渡す
+      const result = await DelayCheck({ trainId: train.id, targetId: targetStation.id });
+      setIsOnTime(result);
+
+      // getDepartureTime にも長いID（targetStation.id）を渡す
+      const time = await getDepartureTime(targetStation.id, train.id);
+      setArrivalTime(time);
+    } else {
+      setArrivalTime("駅不明");
+    }
+  };
+  check();
+}, [train.id, stations]);
 
     if(isSuccess) {
         return (
@@ -44,7 +74,9 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
         <ul className="mt-4 space-y-2 text-sm text-slate-700">
           <li>種別: {train.kind}</li>
           <li>行き先: {train.direction === 'nishifunabashi' ? '西船橋行' : '中野行'}</li>
+          <li>乗車駅: {getStationNameByCode(localStorage.getItem('transferStation') ?? '', stations)}</li>
           <li>時刻: {now.toLocaleString()}</li>
+          <li>到着予定時刻: {arrivalTime ?? "確認中..."} </li>
           <li>ステータス: {status}</li>
         </ul>
         {train.source === 'timetable' && (
@@ -59,7 +91,7 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
                 kind: train.kind,
                 destination: "西船橋行",
                 boardedAt: `${hour}:${minute}`,
-                onTime: DelayCheck(`${hour}:${minute}`)
+                onTime: isOnTime,
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);

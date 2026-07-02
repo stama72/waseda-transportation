@@ -129,7 +129,7 @@ export default function Setting(): JSX.Element {
 
         {/* 駅までの徒歩時間 */}
         <label className="flex items-center justify-between gap-3 p-4">
-          <span className="text-sm font-medium text-slate-700">駅までの徒歩時間</span>
+          <span className="text-sm font-medium text-slate-700">駅から大学までの徒歩時間</span>
           <div className="flex items-center gap-1.5">
             <input
               type="number"

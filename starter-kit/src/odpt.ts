@@ -483,7 +483,7 @@ export async function getDepartureTime(
 
     // 3. 現在時刻以降で、かつ今まで見つけた時間より早いものを記録
     // （※深夜の日跨ぎ考慮として、timeMinは24時以降を1440以上として扱っています）
-    if (stop.timeMin >= nowMin && stop.timeMin < nextTrainMin) {
+    if (stop.timeMin < nextTrainMin) {
       nextTrainMin = stop.timeMin;
     }
   }
