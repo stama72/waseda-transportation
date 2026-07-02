@@ -19,8 +19,10 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     const week = ["日", "月", "火", "水", "木", "金", "土"][now.getDay()];
     
     const [arrivalAt, setarrivalAt] = useState("00:00");
-    const [boardingStationId, setboradingStationId] = localStorage.getItem('transferStation') ?? 'T04';
-  
+    const [boardingStationId, setboardingStationId] = useState(localStorage.getItem('transferStation') ?? 'T04');
+    const [boardedAt, setBoardedAt] = useState("確認中...");
+    getDepartureTime(boardingStationId, train.id).then((time) => setBoardedAt(time ?? "00:00"));
+
     useEffect(() => {
         // destinationStation は 't04' のような駅コードで保存されるが、時刻表APIの駅IDは
         // URN 形式（odpt.Station:...）なので、フル駅IDへ変換してから渡す。
@@ -33,7 +35,10 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
     }, [train.id, stations]);
 
     const [isSuccess, setIsSuccess] = useState(false);
-    const status = (DelayCheck(arrivalAt)) ? "定刻" : "遅刻";
+    const [isOnTime, setIsOnTime] = useState(false)
+    useEffect(() => {
+        DelayCheck(arrivalAt).then(setIsOnTime);
+    }, [arrivalAt]);
 
     if(isSuccess) {
         return (
@@ -58,10 +63,10 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
         <ul className="mt-4 space-y-2 text-sm text-slate-700">
           <li>種別: {train.kind}</li>
           <li>行き先: {train.direction === 'nishifunabashi' ? '西船橋行' : '中野行'}</li>
-          <li>乗車駅: {getStationNameByCode(boardingStationId)}</li>
-          <li>乗車時刻: {getDepartureTime(boardingStationId, train.id)}</li>
-          <li>到着予定時刻: {arrivalTime ?? "確認中..."} </li>
-          <li>ステータス: {status}</li>
+          <li>乗車駅: {getStationNameByCode(boardingStationId ?? '', stations)}</li>
+          <li>乗車時刻: {boardedAt}</li>
+          <li>到着予定時刻: {arrivalAt ?? "確認中..."} </li>
+          <li>ステータス: {isOnTime ? "定刻" : "遅刻"}</li>
         </ul>
         {train.source === 'timetable' && (
           <p className="mt-2 text-xs text-slate-400">※ 位置は時刻表ベースの推定です</p>
@@ -77,7 +82,7 @@ export default function RecordPopup({ train, onClose, onAddRecord, stations = mo
                 destination: "西船橋行",
                 arrivalDate: `${month}/${day} (${week})`,
                 arrivedAt: arrivalAt,
-                onTime: status
+                onTime: isOnTime
             };
             onAddRecord(newEntry); // ここで App.tsx の保存処理が動く
             setIsSuccess(true);
